@@ -31,11 +31,8 @@
 					<div class="col-xl-12">
 						<!-- Dashboard Content Area -->
 						<div class="dashboard-content">
-
 							<!-- Top Stats -->
 							<div class="row mb-4">
-
-								
 								<div class="col-xl-4 col-md-6">
 									<div class="card bg-primary text-white">
 										<div class="card-body">
@@ -67,7 +64,7 @@
 								<div class="col-xl-4 col-md-6">
 									<div class="card bg-warning text-white">
 										<div class="card-body">
-											<h6>Last Sync</h6>
+											<h6 id="lastSyncTime">Last Sync</h6>
 											<h5>
 												{{ session('last_sync') 
 													? \Carbon\Carbon::parse(session('last_sync'))->format('d M Y H:i:s')
@@ -77,7 +74,6 @@
 										</div>
 									</div>
 								</div>
-
 							</div>
 
 							<!-- Action Buttons -->
@@ -134,10 +130,10 @@
 
 											<div class="card-footer bg-light">
 
-												{{-- <a href="{{ route('owner.tally.company.details', urlencode($company['name'])) }}" class="btn btn-sm btn-primary">
+												<a href="{{ route('owner.tally.company.details', urlencode($company['name'])) }}" class="btn btn-sm btn-primary">
 													<i class="fas fa-eye"></i>
 													View Details
-												</a> --}}
+												</a>
 
 												<a href="{{ route('owner.tally.company.ledgers', urlencode($company['name'])) }}" class="btn btn-sm btn-success">
 													<i class="fas fa-file-invoice"></i>
@@ -235,4 +231,5 @@
 				</div>
 			</div>
 		</div>
+		
 		@include('owner.components.footer')

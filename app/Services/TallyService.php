@@ -162,6 +162,8 @@ class TallyService
                                 MASTERID,
                                 ALLLEDGERENTRIES.LIST.LEDGERNAME,
                                 ALLLEDGERENTRIES.LIST.AMOUNT,
+                                LEDGERENTRIES.LIST.LEDGERNAME,
+                                LEDGERENTRIES.LIST.AMOUNT
                             </FETCH>
 
                         </COLLECTION>

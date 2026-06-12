@@ -13,7 +13,7 @@ class OwnerRedirectIfAuthenticated
     {
 
         if (Auth::guard('owner')->check()) {
-            return redirect()->route('owner.dashboard');
+            return redirect()->route('owner.tally.dashboard');
         }
 
         return $next($request);

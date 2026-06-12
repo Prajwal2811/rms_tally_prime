@@ -27,7 +27,7 @@ class OwnerController extends Controller
             'is_subscribed' => "true"
         ]);
 
-        return redirect()->route('owner.dashboard')
+        return redirect()->route('owner.tally.dashboard')
             ->with('success', 'Subscription activated successfully.');
     }
 
@@ -91,7 +91,7 @@ class OwnerController extends Controller
                     ->with('error', 'Please buy a subscription plan first.');
             }
 
-            return redirect()->route('owner.dashboard');
+            return redirect()->route('owner.tally.dashboard');
 
         } else {
 
@@ -367,7 +367,7 @@ class OwnerController extends Controller
 
             return view('owner.tally.index', [
                 'companies' => [],
-                 'tallyConnected' => false,
+                'tallyConnected' => false,
                 'error' => $e->getMessage()
             ]);
         }
@@ -538,6 +538,8 @@ class OwnerController extends Controller
                     $debit = 0;
                     $credit = 0;
 
+                    $particulars = [];
+
                     if (isset($voucher->{'ALLLEDGERENTRIES.LIST'})) {
 
                         foreach ($voucher->{'ALLLEDGERENTRIES.LIST'} as $entry) {
@@ -546,20 +548,27 @@ class OwnerController extends Controller
                                 (string)($entry->LEDGERNAME ?? '')
                             );
 
-                            // Check whether this voucher belongs
-                            // to selected ledger
+                            $amount = (float)(
+                                $entry->AMOUNT ?? 0
+                            );
+
+                            // Selected Ledger
                             if (
                                 strcasecmp(
                                     $entryLedger,
                                     $ledger
                                 ) === 0
                             ) {
-                                $belongsToLedger = true;
-                            }
 
-                            $amount = (float)(
-                                $entry->AMOUNT ?? 0
-                            );
+                                $belongsToLedger = true;
+
+                            } else {
+
+                                // Opposite ledger(s)
+                                if (!empty($entryLedger)) {
+                                    $particulars[] = $entryLedger;
+                                }
+                            }
 
                             if ($amount < 0) {
                                 $debit += abs($amount);
@@ -580,11 +589,11 @@ class OwnerController extends Controller
                             $voucher->DATE ?? ''
                         ),
 
-                        'particulars' => (string)(
-                            $voucher->PARTYLEDGERNAME
-                            ?? $voucher->NARRATION
-                            ?? ''
-                        ),
+                        'particulars' => !empty($particulars)
+                            ? implode(', ', array_unique($particulars))
+                            : (string)(
+                                $voucher->NARRATION ?? ''
+                            ),
 
                         'voucher_type' => (string)(
                             $voucher->VOUCHERTYPENAME ?? ''
@@ -658,6 +667,35 @@ class OwnerController extends Controller
                                 ->sum('credit'),
             ];
 
+            $salesVouchers = collect($vouchers)
+                ->filter(fn($item) => strcasecmp($item['voucher_type'], 'Sales') == 0)
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            $receiptVouchers = collect($vouchers)
+                ->filter(fn($item) => strcasecmp($item['voucher_type'], 'Receipt') == 0)
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            $journalVouchers = collect($vouchers)
+                ->filter(fn($item) => strcasecmp($item['voucher_type'], 'Journal') == 0)
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            $otherVouchers = collect($vouchers)
+                ->filter(function ($item) {
+                    return !in_array(
+                        strtolower($item['voucher_type']),
+                        ['sales', 'receipt', 'journal']
+                    );
+                })
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
             return view(
                 'owner.tally.ledger-vouchers',
                 compact(
@@ -666,8 +704,11 @@ class OwnerController extends Controller
                     'vouchers',
                     'summary',
                     'openingBalance',
-                    'closingBalance'
-
+                    'closingBalance',
+                    'salesVouchers',
+                    'receiptVouchers',
+                    'journalVouchers',
+                    'otherVouchers'
                 )
             );
 
