@@ -55,23 +55,23 @@ class OwnerController extends Controller
             'status' => 'active',
             'is_subscribed' => "false",
             'subscription_expiry' => null,
-        ]); 
+        ]);
 
         return redirect()->route('owner.login')->with('success', 'Registration completed successfully. Please login.');
     }
 
-    
+
     public function authenticate(Request $request)
     {
         $this->validate($request, [
-            'email'     => 'required|email',
-            'password'  => 'required'
+            'email' => 'required|email',
+            'password' => 'required'
         ]);
 
         $credentials = [
-            'email'    => $request->email,
+            'email' => $request->email,
             'password' => $request->password,
-            'status'   => 'active'
+            'status' => 'active'
         ];
 
         if (Auth::guard('owner')->attempt($credentials, $request->get('remember'))) {
@@ -80,8 +80,8 @@ class OwnerController extends Controller
 
             Log::info('Owner login successful', [
                 'email' => $owner->email,
-                'name'  => $owner->owner_name,
-                'time'  => now()
+                'name' => $owner->owner_name,
+                'time' => now()
             ]);
 
             // Subscription Check
@@ -97,7 +97,7 @@ class OwnerController extends Controller
 
             Log::warning('Owner login failed', [
                 'email' => $request->email,
-                'time'  => now()
+                'time' => now()
             ]);
 
             session()->flash('error', 'Either Email/Password is incorrect');
@@ -116,21 +116,21 @@ class OwnerController extends Controller
         if ($owner) {
             Log::info('Owner logged out', [
                 'email' => $owner->email,
-                'name'  => $owner->owner_name,
-                'time'  => now()
+                'name' => $owner->owner_name,
+                'time' => now()
             ]);
         }
 
         Auth::guard('owner')->logout(); // Logs out the owner user
         session()->flash('success', 'You have been logged out successfully.');
-        
+
         return redirect()->route('owner.login'); // Redirect to named route
     }
 
     public function dashboard()
     {
         return view('owner.dashboard');
-      
+
     }
 
 
@@ -138,7 +138,7 @@ class OwnerController extends Controller
     {
         $accountants = Accountant::all();
         return view('owner.accountant.accountants-list', compact('accountants'));
-    
+
     }
 
     public function changeStatus(Request $request)
@@ -154,16 +154,16 @@ class OwnerController extends Controller
         return redirect()->route('owner.accountants.index')->with('success', 'Accountant status updated successfully!');
     }
 
-     public function createAccountant()
+    public function createAccountant()
     {
         return view('owner.accountant.accountant-create');
-    
+
     }
 
 
     public function storeAccountant(Request $request)
     {
-       $request->validate([
+        $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:rms_accountants,email',
             'phone' => 'required|min:10|max:15',
@@ -184,7 +184,7 @@ class OwnerController extends Controller
 
 
         return redirect()->route('owner.accountants.index')->with('success', 'Accountant created successfully!');
-        
+
     }
 
 
@@ -192,7 +192,7 @@ class OwnerController extends Controller
     {
         $accountant = Accountant::find($id);
         return view('owner.accountant.accountant-edit', compact('accountant'));
-    
+
     }
 
 
@@ -200,9 +200,9 @@ class OwnerController extends Controller
     public function updateAccountant(Request $request, $id)
     {
         $request->validate([
-            'name'    => 'required|string|max:255',
-            'email'   => 'required|email|unique:rms_accountants,email,' . $id,
-            'phone'   => 'required|digits:10|unique:rms_accountants,phone,' . $id,
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:rms_accountants,email,' . $id,
+            'phone' => 'required|digits:10|unique:rms_accountants,phone,' . $id,
             'address' => 'required|string|max:255',
         ]);
 
@@ -210,9 +210,9 @@ class OwnerController extends Controller
         $accountant = Accountant::findOrFail($id);
 
         $accountant->update([
-            'name'    => $request->name,
-            'email'   => $request->email,
-            'phone'   => $request->phone,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
             'address' => $request->address,
         ]);
 
@@ -220,21 +220,21 @@ class OwnerController extends Controller
     }
 
 
-     public function collectors()
+    public function collectors()
     {
         $collectors = Collector::select('rms_accountants.*', 'rms_collectors.*', 'rms_accountants.name as accountant_name')
-                                ->from('rms_collectors')
-                                ->join('rms_accountants', 'rms_collectors.accountant_id', '=', 'rms_accountants.id')
-                                ->get();
+            ->from('rms_collectors')
+            ->join('rms_accountants', 'rms_collectors.accountant_id', '=', 'rms_accountants.id')
+            ->get();
         // echo "<pre>"; print_r($collectors); die;
         return view('owner.collectors.collectors-list', compact('collectors'));
-    
+
     }
 
-     public function createCollector()
+    public function createCollector()
     {
         return view('owner.collectors.collector-create');
-    
+
     }
 
 
@@ -242,22 +242,22 @@ class OwnerController extends Controller
     {
         $request->validate([
             'accountant_id' => 'required|exists:rms_accountants,id',
-            'name'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:rms_collectors,email',
-            'phone'         => 'required|min:10|max:15|unique:rms_collectors,phone',
-            'address'       => 'required',
-            'password'      => 'required|min:6|confirmed',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:rms_collectors,email',
+            'phone' => 'required|min:10|max:15|unique:rms_collectors,phone',
+            'address' => 'required',
+            'password' => 'required|min:6|confirmed',
         ]);
 
         Collector::create([
             'accountant_id' => $request->accountant_id,
-            'name'          => $request->name,
-            'email'         => $request->email,
-            'phone'         => $request->phone,
-            'address'       => $request->address,
-            'password'      => Hash::make($request->password),
-            'pass'          => $request->password,
-            'status'        => 'active',
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'address' => $request->address,
+            'password' => Hash::make($request->password),
+            'pass' => $request->password,
+            'status' => 'active',
         ]);
 
         return redirect()
@@ -284,7 +284,7 @@ class OwnerController extends Controller
     {
         $collector = Collector::find($id);
         return view('owner.collectors.collector-edit', compact('collector'));
-    
+
     }
 
 
@@ -292,10 +292,10 @@ class OwnerController extends Controller
     {
         $request->validate([
             'accountant_id' => 'required|exists:rms_accountants,id',
-            'name'          => 'required|string|max:255',
-            'email'         => 'required|email|unique:rms_collectors,email,' . $id,
-            'phone'         => 'required|digits:10|unique:rms_collectors,phone,' . $id,
-            'address'       => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:rms_collectors,email,' . $id,
+            'phone' => 'required|digits:10|unique:rms_collectors,phone,' . $id,
+            'address' => 'required|string|max:255',
         ]);
 
 
@@ -303,9 +303,9 @@ class OwnerController extends Controller
 
         $collector->update([
             'accountant_id' => $request->accountant_id,
-            'name'    => $request->name,
-            'email'   => $request->email,
-            'phone'   => $request->phone,
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
             'address' => $request->address,
         ]);
 
@@ -315,7 +315,7 @@ class OwnerController extends Controller
 
 
 
- 
+
 
 
     protected TallyService $tally;
@@ -326,7 +326,7 @@ class OwnerController extends Controller
     }
 
 
-     public function company()
+    public function company()
     {
         // echo "done"; die;
         try {
@@ -339,7 +339,7 @@ class OwnerController extends Controller
                 $tallyConnected = true;
             }
 
-            
+
             $companies = [];
 
             if ($xmlObj) {
@@ -375,7 +375,7 @@ class OwnerController extends Controller
 
 
 
-  
+
 
     public function ledgers(Request $request)
     {
@@ -386,7 +386,7 @@ class OwnerController extends Controller
         dd($xml);
     }
 
-     
+
 
     public function syncAll()
     {
@@ -477,7 +477,7 @@ class OwnerController extends Controller
             );
         }
     }
-    
+
     public function ledgerVouchers($company, $ledger)
     {
         try {
@@ -490,16 +490,7 @@ class OwnerController extends Controller
                 $ledger
             );
 
-            // Save XML for debugging
-            file_put_contents(
-                storage_path('app/tally_vouchers.xml'),
-                $xml
-            );
-
-            // Remove invalid XML entities
             $xml = preg_replace('/&#(?:0*4);?/i', '', $xml);
-
-            // Remove control characters
             $xml = preg_replace(
                 '/[\x00-\x08\x0B\x0C\x0E-\x1F]/',
                 '',
@@ -535,52 +526,49 @@ class OwnerController extends Controller
                 foreach ($nodes as $voucher) {
 
                     $belongsToLedger = false;
-                    $debit = 0;
-                    $credit = 0;
 
                     $particulars = [];
+
+                    $ledgerAmount = 0;
 
                     if (isset($voucher->{'ALLLEDGERENTRIES.LIST'})) {
 
                         foreach ($voucher->{'ALLLEDGERENTRIES.LIST'} as $entry) {
 
-                            $entryLedger = trim(
-                                (string)($entry->LEDGERNAME ?? '')
-                            );
+                            $entryLedger = trim((string)($entry->LEDGERNAME ?? ''));
 
-                            $amount = (float)(
-                                $entry->AMOUNT ?? 0
-                            );
+                            $amount = (float)($entry->AMOUNT ?? 0);
 
-                            // Selected Ledger
-                            if (
-                                strcasecmp(
-                                    $entryLedger,
-                                    $ledger
-                                ) === 0
-                            ) {
+                            if (strcasecmp($entryLedger, $ledger) === 0) {
 
                                 $belongsToLedger = true;
 
+                                // ADD instead of overwrite
+                                $ledgerAmount += $amount;
+
                             } else {
 
-                                // Opposite ledger(s)
                                 if (!empty($entryLedger)) {
                                     $particulars[] = $entryLedger;
                                 }
                             }
-
-                            if ($amount < 0) {
-                                $debit += abs($amount);
-                            } else {
-                                $credit += $amount;
-                            }
                         }
                     }
 
-                    // Skip unrelated vouchers
-                    if (!$belongsToLedger) {
+                                    if (!$belongsToLedger) {
                         continue;
+                    }
+
+                                        $debit = 0;
+                    $credit = 0;
+
+                    if ($ledgerAmount < 0) {
+
+                        $debit = abs($ledgerAmount);
+
+                    } elseif ($ledgerAmount > 0) {
+
+                        $credit = abs($ledgerAmount);
                     }
 
                     $vouchers[] = [
@@ -614,83 +602,83 @@ class OwnerController extends Controller
                 }
             }
 
+            // Opening / Closing Balance
+
+           
+
             $balanceXml = $this->tally->getLedgerDetails(
                 $company,
                 $ledger
             );
 
-            // print_r($balanceXml); die;
+            $balanceObj = simplexml_load_string($balanceXml);
+
+            $openingBalance = 0;
+            $closingBalance = 0;
 
             $balanceObj = simplexml_load_string($balanceXml);
-            // print_r($balanceObj); die;
 
-            if ($balanceObj) {
+            if ($balanceObj !== false) {
 
-                $ledgerNode = $balanceObj->xpath(
-                    "//*[local-name()='LEDGER']"
-                );
+                if (
+                    isset($balanceObj->BODY->DATA->COLLECTION->LEDGER)
+                ) {
 
-                if (!empty($ledgerNode)) {
+                    $ledgerData = $balanceObj->BODY->DATA->COLLECTION->LEDGER;
 
                     $openingBalance = (float) (
-                        $balanceObj->BODY
-                            ->DATA
-                            ->COLLECTION
-                            ->LEDGER
-                            ->OPENINGBALANCE ?? 0
+                        $ledgerData->OPENINGBALANCE ?? 0
                     );
 
                     $closingBalance = (float) (
-                        $balanceObj->BODY
-                            ->DATA
-                            ->COLLECTION
-                            ->LEDGER
-                            ->CLOSINGBALANCE ?? 0
+                        $ledgerData->CLOSINGBALANCE ?? 0
                     );
                 }
             }
 
-            
-            // Sort by date descending
             usort($vouchers, function ($a, $b) {
-                return strcmp($b['date'], $a['date']);
+                return strcmp(
+                    $b['date'],
+                    $a['date']
+                );
             });
 
+            // Summary
             $summary = [
-
-                'sale' => collect($vouchers)
-                            ->where('voucher_type', 'Sales')
-                            ->sum('credit'),
-
-                'receipts' => collect($vouchers)
-                                ->where('voucher_type', 'Receipt')
-                                ->sum('credit'),
+                'sale'     => collect($vouchers)->sum('debit'),
+                'receipts' => collect($vouchers)->sum('credit'),
             ];
 
+            // Sales = Debit Only
             $salesVouchers = collect($vouchers)
-                ->filter(fn($item) => strcasecmp($item['voucher_type'], 'Sales') == 0)
-                ->sortByDesc('date')
-                ->values()
-                ->toArray();
-
-            $receiptVouchers = collect($vouchers)
-                ->filter(fn($item) => strcasecmp($item['voucher_type'], 'Receipt') == 0)
-                ->sortByDesc('date')
-                ->values()
-                ->toArray();
-
-            $journalVouchers = collect($vouchers)
-                ->filter(fn($item) => strcasecmp($item['voucher_type'], 'Journal') == 0)
-                ->sortByDesc('date')
-                ->values()
-                ->toArray();
-
-            $otherVouchers = collect($vouchers)
                 ->filter(function ($item) {
-                    return !in_array(
-                        strtolower($item['voucher_type']),
-                        ['sales', 'receipt', 'journal']
-                    );
+
+                    return ($item['debit'] ?? 0) > 0
+                        && !str_contains(
+                            strtolower(trim($item['voucher_type'] ?? '')),
+                            'journal'
+                        );
+                })
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            // Receipt = Credit Only
+            $receiptVouchers = collect($vouchers)
+                ->filter(function ($item) {
+
+                    return ($item['credit'] ?? 0) > 0
+                        && ($item['debit'] ?? 0) == 0;
+
+                })
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            // Journal
+            $journalVouchers = collect($vouchers)
+                ->filter(function ($item) {
+                    return strtolower($item['voucher_type']) == 'journal';
                 })
                 ->sortByDesc('date')
                 ->values()
@@ -707,19 +695,20 @@ class OwnerController extends Controller
                     'closingBalance',
                     'salesVouchers',
                     'receiptVouchers',
-                    'journalVouchers',
-                    'otherVouchers'
+                    'journalVouchers'
                 )
             );
 
-            
         } catch (\Throwable $e) {
 
-            \Log::error('Ledger Voucher Error', [
-                'message' => $e->getMessage(),
-                'line'    => $e->getLine(),
-                'file'    => $e->getFile(),
-            ]);
+            \Log::error(
+                'Ledger Voucher Error',
+                [
+                    'message' => $e->getMessage(),
+                    'line' => $e->getLine(),
+                    'file' => $e->getFile(),
+                ]
+            );
 
             return back()->with(
                 'error',
@@ -727,6 +716,6 @@ class OwnerController extends Controller
             );
         }
     }
-     
-    
+
+
 }

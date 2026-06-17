@@ -59,7 +59,6 @@ class Kernel extends HttpKernel
         'owner.auth' => \App\Http\Middleware\OwnerAuthenticate::class,
         'owner.guest' => \App\Http\Middleware\OwnerRedirectIfAuthenticated::class,
         'owner.subscription' => \App\Http\Middleware\CheckOwnerSubscription::class,        
-
         
         'auth' => \App\Http\Middleware\Authenticate::class,
         'auth.basic' => \Illuminate\Auth\Middleware\AuthenticateWithBasicAuth::class,

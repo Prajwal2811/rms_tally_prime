@@ -43,7 +43,7 @@
 								</div>
 
 								<div class="col-xl-4 col-md-6">
-									<div class="card bg-success text-white">
+									<div class="card bg-primary text-white">
 										<div class="card-body">
 											<h6>Tally Status</h6>
 											@if($tallyConnected)
@@ -62,7 +62,7 @@
 								</div>
 
 								<div class="col-xl-4 col-md-6">
-									<div class="card bg-warning text-white">
+									<div class="card bg-primary text-white">
 										<div class="card-body">
 											<h6 id="lastSyncTime">Last Sync</h6>
 											<h5>
@@ -231,5 +231,11 @@
 				</div>
 			</div>
 		</div>
+
+		<style>
+			.bg-primary{
+				background-color: #E9E2F8 !important;
+			}
+		</style>
 		
 		@include('owner.components.footer')

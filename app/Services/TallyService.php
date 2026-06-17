@@ -74,15 +74,15 @@ class TallyService
             </ENVELOPE>
             XML;
 
-            return $this->request($xml);
-        }
+        return $this->request($xml);
+    }
 
 
-        
+
     /**
      * Ledgers
      */
-     public function getLedgers(string $company)
+    public function getLedgers(string $company)
     {
         $xml = <<<XML
             <ENVELOPE>
@@ -123,71 +123,72 @@ class TallyService
             $xml
         );
     }
-    
+
     public function getLedgerVouchers(string $company, string $ledgerName)
     {
         $company = htmlspecialchars($company, ENT_XML1);
         $ledgerName = htmlspecialchars($ledgerName, ENT_XML1);
 
         $xml = <<<XML
-    <ENVELOPE>
-        <HEADER>
-            <VERSION>1</VERSION>
-            <TALLYREQUEST>EXPORT</TALLYREQUEST>
-            <TYPE>COLLECTION</TYPE>
-            <ID>Ledger Vouchers</ID>
-        </HEADER>
+            <ENVELOPE>
+                <HEADER>
+                    <VERSION>1</VERSION>
+                    <TALLYREQUEST>EXPORT</TALLYREQUEST>
+                    <TYPE>COLLECTION</TYPE>
+                    <ID>Ledger Vouchers</ID>
+                </HEADER>
 
-        <BODY>
-            <DESC>
+                <BODY>
+                    <DESC>
 
-                <STATICVARIABLES>
-                    <SVCURRENTCOMPANY>{$company}</SVCURRENTCOMPANY>
-                    <SVEXPORTFORMAT>XML</SVEXPORTFORMAT>
-                </STATICVARIABLES>
+                        <STATICVARIABLES>
+                            <SVCURRENTCOMPANY>{$company}</SVCURRENTCOMPANY>
+                            <SVEXPORTFORMAT>XML</SVEXPORTFORMAT>
+                        </STATICVARIABLES>
 
-                <TDL>
-                    <TDLMESSAGE>
+                        <TDL>
+                            <TDLMESSAGE>
 
-                        <COLLECTION NAME="Ledger Vouchers">
+                                <COLLECTION NAME="Ledger Vouchers">
 
-                            <TYPE>Voucher</TYPE>
+                                    <TYPE>Voucher</TYPE>
 
-                            <FETCH>
-                                DATE,
-                                VOUCHERNUMBER,
-                                VOUCHERTYPENAME,
-                                PARTYLEDGERNAME,
-                                NARRATION,
-                                MASTERID,
-                                ALLLEDGERENTRIES.LIST.LEDGERNAME,
-                                ALLLEDGERENTRIES.LIST.AMOUNT,
-                                LEDGERENTRIES.LIST.LEDGERNAME,
-                                LEDGERENTRIES.LIST.AMOUNT
-                            </FETCH>
+                                    <FETCH>
+                                        DATE,
+                                        VOUCHERNUMBER,
+                                        VOUCHERTYPENAME,
+                                        PARTYLEDGERNAME,
+                                        NARRATION,
+                                        MASTERID,
+                                        ALLLEDGERENTRIES.LIST.LEDGERNAME,
+                                        ALLLEDGERENTRIES.LIST.AMOUNT,
+                                        LEDGERENTRIES.LIST.LEDGERNAME,
+                                        LEDGERENTRIES.LIST.AMOUNT
+                                    </FETCH>
 
-                        </COLLECTION>
+                                </COLLECTION>
 
-                    </TDLMESSAGE>
-                </TDL>
+                            </TDLMESSAGE>
+                        </TDL>
 
-            </DESC>
-        </BODY>
-    </ENVELOPE>
-    XML;
+                    </DESC>
+                </BODY>
+            </ENVELOPE>
+        XML;
 
 
         return $this->request($xml);
     }
-      
+
 
     public function getLedgerDetails($company, $ledgerName)
-{
-    $company = htmlspecialchars($company, ENT_XML1);
-    $ledgerName = htmlspecialchars($ledgerName, ENT_XML1);
+    {
+        $company = htmlspecialchars($company, ENT_XML1);
+        $ledgerName = htmlspecialchars($ledgerName, ENT_XML1);
 
-    $xml = <<<XML
+        $xml = <<<XML
 <ENVELOPE>
+
     <HEADER>
         <VERSION>1</VERSION>
         <TALLYREQUEST>EXPORT</TALLYREQUEST>
@@ -196,6 +197,7 @@ class TallyService
     </HEADER>
 
     <BODY>
+
         <DESC>
 
             <STATICVARIABLES>
@@ -204,18 +206,21 @@ class TallyService
             </STATICVARIABLES>
 
             <TDL>
+
                 <TDLMESSAGE>
 
                     <COLLECTION NAME="LedgerDetails">
+
                         <TYPE>Ledger</TYPE>
 
-                        <FILTERS>LedgerFilter</FILTERS>
+                        <FILTER>LedgerFilter</FILTER>
 
                         <FETCH>
                             NAME,
                             OPENINGBALANCE,
                             CLOSINGBALANCE
                         </FETCH>
+
                     </COLLECTION>
 
                     <SYSTEM TYPE="Formulae" NAME="LedgerFilter">
@@ -223,13 +228,16 @@ class TallyService
                     </SYSTEM>
 
                 </TDLMESSAGE>
+
             </TDL>
 
         </DESC>
+
     </BODY>
+
 </ENVELOPE>
 XML;
 
-    return $this->request($xml);
-}
+        return $this->request($xml);
+    }
 }
