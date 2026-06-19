@@ -7,6 +7,7 @@ use Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Owner;
+use App\Models\VoucherMapping;
 use App\Models\Accountant;
 use App\Models\Collector;
 use Illuminate\Support\Facades\Hash;
@@ -427,56 +428,71 @@ class OwnerController extends Controller
 
 
 
-    public function companyLedgers($company)
-    {
-        try {
+  public function companyLedgers($company)
+{
+    try {
 
-            $company = urldecode($company);
+        $company = urldecode($company);
 
-            $xml = $this->tally->getLedgers($company);
+        $xml = $this->tally->getLedgers($company);
 
-            $xmlObj = simplexml_load_string($xml);
+        // Remove invalid XML entities like &#4;
+        $xml = preg_replace('/&#x?0*4;?/i', '', $xml);
+        $xml = preg_replace('/&#[0-8];|&#1[0-9];|&#2[0-9];|&#3[0-1];/', '', $xml);
 
-            $ledgers = [];
+        // Remove control characters
+        $xml = preg_replace('/[\x00-\x08\x0B\x0C\x0E-\x1F]/', '', $xml);
 
-            if ($xmlObj) {
+        libxml_use_internal_errors(true);
 
-                $nodes = $xmlObj->xpath(
-                    "//*[local-name()='LEDGER']"
-                );
+        $xmlObj = simplexml_load_string($xml);
 
-                if ($nodes) {
+        if ($xmlObj === false) {
+            foreach (libxml_get_errors() as $error) {
+                dump($error->message);
+            }
+        }
 
-                    foreach ($nodes as $ledger) {
+        $xmlObj = simplexml_load_string($xml);
 
+        $ledgers = [];
+
+        if ($xmlObj) {
+
+            $nodes = $xmlObj->xpath("//*[local-name()='LEDGER']");
+
+            if ($nodes) {
+
+                foreach ($nodes as $ledger) {
+
+                    $name  = (string)($ledger['NAME'] ?? '');
+                    $under = (string)($ledger->PARENT ?? '');
+
+                    // Sirf Sundry Debtors aur Sundry Creditors
+                    if (
+                        in_array(
+                            trim($under),
+                            ['Sundry Debtors', 'Sundry Creditors']
+                        )
+                    ) {
                         $ledgers[] = [
-
-                            'name' => (string) (
-                                $ledger['NAME']
-                                ?? $ledger->NAME
-                            ),
-
+                            'name'  => $name,
+                            'under' => $under,
                         ];
                     }
                 }
             }
-
-            return view(
-                'owner.tally.ledgers',
-                compact(
-                    'company',
-                    'ledgers'
-                )
-            );
-
-        } catch (\Exception $e) {
-
-            return back()->with(
-                'error',
-                $e->getMessage()
-            );
         }
+
+        return view(
+            'owner.tally.ledgers',
+            compact('company', 'ledgers')
+        );
+
+    } catch (\Exception $e) {
+        dd($e->getMessage());
     }
+}
 
     public function ledgerVouchers($company, $ledger)
     {
@@ -718,4 +734,69 @@ class OwnerController extends Controller
     }
 
 
+
+
+    public function voucherMappings($company)
+    {
+        $xml = $this->tally->getVoucherTypes($company);
+
+        $xmlObj = simplexml_load_string($xml);
+
+        $voucherTypes = [];
+
+        if ($xmlObj !== false) {
+
+            $nodes = $xmlObj->xpath("//*[local-name()='VOUCHERTYPE']");
+
+            if (!empty($nodes)) {
+
+                foreach ($nodes as $node) {
+
+                    $name = '';
+
+                    // NAME tag
+                    if (isset($node->NAME)) {
+                        $name = (string) $node->NAME;
+                    }
+
+                    // NAME attribute
+                    if (empty($name) && isset($node['NAME'])) {
+                        $name = (string) $node['NAME'];
+                    }
+
+                    if (!empty($name)) {
+                        $voucherTypes[] = [
+                            'name' => $name
+                        ];
+                    }
+                }
+            }
+        }
+
+        $savedMappings = VoucherMapping::pluck('mapped_to', 'voucher_type')->toArray();
+
+        return view('owner.tally.voucher-mappings', compact('voucherTypes', 'savedMappings'));
+    }
+
+
+    public function saveVoucherMappings(Request $request)
+    {
+        $voucherTypes = array_keys($request->mapping);
+
+        VoucherMapping::whereNotIn('voucher_type', $voucherTypes)->delete();
+
+        foreach ($request->mapping as $voucherType => $mappedTo) {
+
+            VoucherMapping::updateOrCreate(
+                [
+                    'voucher_type' => $voucherType
+                ],
+                [
+                    'mapped_to' => $mappedTo
+                ]
+            );
+        }
+
+        return back()->with('success', 'Voucher Mapping Saved Successfully.');
+    }
 }

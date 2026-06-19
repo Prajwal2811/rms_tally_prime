@@ -110,6 +110,17 @@ Route::prefix('owner')->middleware(['auth:owner', 'owner.subscription'])->group(
             [OwnerController::class, 'ledgerVouchers']
         )->name('owner.tally.ledger.vouchers');
 
+
+
+        Route::get(
+            '/tally/voucher-mappings/{company}',
+            [OwnerController::class, 'voucherMappings']
+        )->name('owner.tally.voucher.mappings');
+
+
+        Route::post('/voucher-mappings/save', [OwnerController::class, 'saveVoucherMappings'])->name('owner.voucher-mappings.save');
+
+            
         // Ledgers
         Route::get('/ledgers-list', [OwnerController::class, 'ledgers'])->name('owner.ledgers.index');
 

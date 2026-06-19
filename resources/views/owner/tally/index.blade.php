@@ -130,14 +130,20 @@
 
 											<div class="card-footer bg-light">
 
-												<a href="{{ route('owner.tally.company.details', urlencode($company['name'])) }}" class="btn btn-sm btn-primary">
+												{{-- <a href="{{ route('owner.tally.company.details', urlencode($company['name'])) }}" class="btn btn-sm btn-primary">
 													<i class="fas fa-eye"></i>
 													View Details
-												</a>
+												</a> --}}
 
 												<a href="{{ route('owner.tally.company.ledgers', urlencode($company['name'])) }}" class="btn btn-sm btn-success">
 													<i class="fas fa-file-invoice"></i>
 													Ledgers
+												</a>
+
+
+												<a href="{{ route('owner.tally.voucher.mappings', urlencode($company['name'])) }}" class="btn btn-sm btn-dark">
+													<i class="fas fa-file-invoice"></i>
+													Voucher Mapping
 												</a>
 
 											</div>

@@ -563,6 +563,7 @@ class OwnerController extends Controller
     }
 
 
+
     public function ledgerReceipts($company, $ledger)
     {
         try {

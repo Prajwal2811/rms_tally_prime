@@ -154,6 +154,37 @@ let dataSet = [
     this.nodes().to$().removeClass('selected')
     });
 
+
+
+
+	var table = $('#example111').DataTable({
+		paging: false, // pagination remove
+
+		createdRow: function (row, data, index) {
+			$(row).addClass('selected');
+		},
+
+		language: {
+			paginate: {
+				next: '<i class="fa fa-angle-double-right" aria-hidden="true"></i>',
+				previous: '<i class="fa fa-angle-double-left" aria-hidden="true"></i>'
+			}
+		}
+	});
+
+	table.on('click', 'tbody tr', function () {
+		var $row = table.row(this).nodes().to$();
+
+		if ($row.hasClass('selected')) {
+			$row.removeClass('selected');
+		} else {
+			$row.addClass('selected');
+		}
+	});
+
+	table.rows().every(function () {
+		this.nodes().to$().removeClass('selected');
+	});
     //example 2
     var table2 = $('#example2').DataTable( {
         createdRow: function ( row, data, index ) {

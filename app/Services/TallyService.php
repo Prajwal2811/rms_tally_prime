@@ -85,26 +85,37 @@ class TallyService
     public function getLedgers(string $company)
     {
         $xml = <<<XML
-            <ENVELOPE>
-                <HEADER>
-                    <VERSION>1</VERSION>
-                    <TALLYREQUEST>EXPORT</TALLYREQUEST>
-                    <TYPE>COLLECTION</TYPE>
-                    <ID>List of Ledgers</ID>
-                </HEADER>
+    <ENVELOPE>
+        <HEADER>
+            <VERSION>1</VERSION>
+            <TALLYREQUEST>EXPORT</TALLYREQUEST>
+            <TYPE>COLLECTION</TYPE>
+            <ID>Ledger Collection</ID>
+        </HEADER>
 
-                <BODY>
-                    <DESC>
+        <BODY>
+            <DESC>
 
-                        <STATICVARIABLES>
-                            <SVCURRENTCOMPANY>{$company}</SVCURRENTCOMPANY>
-                            <SVEXPORTFORMAT>XML</SVEXPORTFORMAT>
-                        </STATICVARIABLES>
+                <STATICVARIABLES>
+                    <SVCURRENTCOMPANY>{$company}</SVCURRENTCOMPANY>
+                    <SVEXPORTFORMAT>XML</SVEXPORTFORMAT>
+                </STATICVARIABLES>
 
-                    </DESC>
-                </BODY>
-            </ENVELOPE>
-            XML;
+                <TDL>
+                    <TDLMESSAGE>
+
+                        <COLLECTION NAME="Ledger Collection">
+                            <TYPE>Ledger</TYPE>
+                            <FETCH>NAME,PARENT</FETCH>
+                        </COLLECTION>
+
+                    </TDLMESSAGE>
+                </TDL>
+
+            </DESC>
+        </BODY>
+    </ENVELOPE>
+    XML;
 
         return $this->request($xml);
     }
@@ -240,4 +251,43 @@ XML;
 
         return $this->request($xml);
     }
+
+
+    public function getVoucherTypes(string $company)
+{
+    $xml = <<<XML
+<ENVELOPE>
+    <HEADER>
+        <VERSION>1</VERSION>
+        <TALLYREQUEST>EXPORT</TALLYREQUEST>
+        <TYPE>COLLECTION</TYPE>
+        <ID>Voucher Type Collection</ID>
+    </HEADER>
+
+    <BODY>
+        <DESC>
+            <STATICVARIABLES>
+                <SVCURRENTCOMPANY>{$company}</SVCURRENTCOMPANY>
+                <SVEXPORTFORMAT>\$\$SysName:XML</SVEXPORTFORMAT>
+            </STATICVARIABLES>
+
+            <TDL>
+                <TDLMESSAGE>
+
+                    <COLLECTION NAME="Voucher Type Collection">
+                        <TYPE>Voucher Type</TYPE>
+                        <FETCH>Name</FETCH>
+                    </COLLECTION>
+
+                </TDLMESSAGE>
+            </TDL>
+
+        </DESC>
+    </BODY>
+</ENVELOPE>
+XML;
+
+
+    return $this->request($xml);
+}
 }

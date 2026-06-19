@@ -60,58 +60,151 @@
                             
                             
 
-                            <div class="card-body">
-                                <div class="table-responsive">
-                                    <table id="example" class="display" style="min-width: 845px">
-                                        <thead>
-											<tr>
-												<th>Sr.No</th>
-												<th>Ledger Name</th>
-                                                <th>Action</th>
-											</tr>
-										</thead>
-                                        <tbody>
-                                            @forelse($ledgers as $index => $ledger)
+                           <div class="card-body">
 
-                                                @if(!empty(trim($ledger['name'] ?? '')))
-                                                    <tr>
-                                                        <td>{{ $index + 1 }}</td>
+                            <ul class="nav nav-pills mb-4" id="ledgerTabs" role="tablist">
 
-                                                        <td>{{ $ledger['name'] }}</td>
+                                <li class="nav-item me-2">
+                                    <button class="nav-link active"
+                                        data-bs-toggle="pill"
+                                        data-bs-target="#debtors-tab">
+                                        Sundry Debtors
+                                        ({{ collect($ledgers)->where('under', 'Sundry Debtors')->count() }})
+                                    </button>
+                                </li>
 
-                                                        <td>
-                                                            <a href="{{ route(
+                                <li class="nav-item me-2">
+                                    <button class="nav-link"
+                                        data-bs-toggle="pill"
+                                        data-bs-target="#creditors-tab">
+                                        Sundry Creditors
+                                        ({{ collect($ledgers)->where('under', 'Sundry Creditors')->count() }})
+                                    </button>
+                                </li>
+
+                            </ul>
+
+                            <div class="tab-content">
+
+                                <!-- Debtors -->
+                                <div class="tab-pane fade show active" id="debtors-tab">
+
+                                    <div class="table-responsive">
+                                         <table id="example11" class="display" style="min-width: 845px">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr.No</th>
+                                                    <th>Ledger Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+
+                                                @php $i = 1; @endphp
+
+                                                @forelse($ledgers as $ledger)
+
+                                                    @if(($ledger['under'] ?? '') == 'Sundry Debtors')
+
+                                                        <tr>
+                                                            <td>{{ $i++ }}</td>
+
+                                                            <td>{{ $ledger['name'] }}</td>
+
+                                                            <td>
+                                                                <a href="{{ route(
                                                                     'owner.tally.ledger.vouchers',
                                                                     [
                                                                         'company' => urlencode($company),
                                                                         'ledger'  => urlencode($ledger['name'])
                                                                     ]
                                                                 ) }}"
-                                                            class="btn btn-primary btn-sm">
-                                                                View Vouchers
-                                                            </a>
+                                                                class="btn btn-primary btn-sm">
+                                                                    View Vouchers
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+
+                                                    @endif
+
+                                                @empty
+
+                                                    <tr>
+                                                        <td colspan="3" class="text-center">
+                                                            No Debtors Found
                                                         </td>
                                                     </tr>
-                                                @endif
 
-                                            @empty
-                                                <tr>
-                                                    <td colspan="3" class="text-center">
-                                                        No Ledgers Found
-                                                    </td>
-                                                </tr>
-                                            @endforelse
-                                        </tbody>
-                                        <tfoot>
-                                            <tr>
-                                                <th>Sr.No</th>
-												<th>Ledger Name</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
+                                                @endforelse
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
                                 </div>
+
+                                <!-- Creditors -->
+                                <div class="tab-pane fade" id="creditors-tab">
+
+                                    <div class="table-responsive">
+                                         <table id="example12" class="display" style="min-width: 845px">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr.No</th>
+                                                    <th>Ledger Name</th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+
+                                                @php $j = 1; @endphp
+
+                                                @forelse($ledgers as $ledger)
+
+                                                    @if(($ledger['under'] ?? '') == 'Sundry Creditors')
+
+                                                        <tr>
+                                                            <td>{{ $j++ }}</td>
+
+                                                            <td>{{ $ledger['name'] }}</td>
+
+                                                            <td>
+                                                                <a href="{{ route(
+                                                                    'owner.tally.ledger.vouchers',
+                                                                    [
+                                                                        'company' => urlencode($company),
+                                                                        'ledger'  => urlencode($ledger['name'])
+                                                                    ]
+                                                                ) }}"
+                                                                class="btn btn-primary btn-sm">
+                                                                    View Vouchers
+                                                                </a>
+                                                            </td>
+                                                        </tr>
+
+                                                    @endif
+
+                                                @empty
+
+                                                    <tr>
+                                                        <td colspan="3" class="text-center">
+                                                            No Creditors Found
+                                                        </td>
+                                                    </tr>
+
+                                                @endforelse
+
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+
                             </div>
+
+                        </div>
                         </div>
                     </div>
 				</div>
