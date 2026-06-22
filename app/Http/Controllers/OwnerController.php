@@ -494,9 +494,16 @@ class OwnerController extends Controller
     }
 }
 
-    public function ledgerVouchers($company, $ledger)
+    public function ledgerVouchers($company, $ledger, $under = null)
     {
+    
+        $under   = urldecode($under);
+
         try {
+
+            $voucherMappings = VoucherMapping::where('company', $company)
+                            ->pluck('mapped_to', 'voucher_type')
+                            ->toArray();
 
             $company = urldecode($company);
             $ledger  = urldecode($ledger);
@@ -505,6 +512,8 @@ class OwnerController extends Controller
                 $company,
                 $ledger
             );
+
+            // echo "<pre>"; print_r($xml); die;
 
             $xml = preg_replace('/&#(?:0*4);?/i', '', $xml);
             $xml = preg_replace(
@@ -587,41 +596,34 @@ class OwnerController extends Controller
                         $credit = abs($ledgerAmount);
                     }
 
+                    $voucherType = trim((string)($voucher->VOUCHERTYPENAME ?? ''));
+
                     $vouchers[] = [
 
-                        'date' => (string)(
-                            $voucher->DATE ?? ''
-                        ),
+                        'date' => (string)($voucher->DATE ?? ''),
 
                         'particulars' => !empty($particulars)
                             ? implode(', ', array_unique($particulars))
-                            : (string)(
-                                $voucher->NARRATION ?? ''
-                            ),
+                            : (string)($voucher->NARRATION ?? ''),
 
-                        'voucher_type' => (string)(
-                            $voucher->VOUCHERTYPENAME ?? ''
+                        'voucher_type' => $voucherType,
+
+                        'mapped_type' => trim(
+                            $voucherMappings[$voucherType] ?? 'Others'
                         ),
 
-                        'voucher_number' => (string)(
-                            $voucher->VOUCHERNUMBER ?? ''
-                        ),
+                        'voucher_number' => (string)($voucher->VOUCHERNUMBER ?? ''),
 
                         'debit' => $debit,
 
                         'credit' => $credit,
 
-                        'master_id' => (string)(
-                            $voucher->MASTERID ?? ''
-                        ),
+                        'master_id' => (string)($voucher->MASTERID ?? ''),
                     ];
                 }
             }
 
             // Opening / Closing Balance
-
-           
-
             $balanceXml = $this->tally->getLedgerDetails(
                 $company,
                 $ledger
@@ -660,45 +662,85 @@ class OwnerController extends Controller
             });
 
             // Summary
-            $summary = [
+
+            $salesVouchers = collect($vouchers)
+                ->filter(function ($item) {
+                    return strtolower(trim($item['mapped_type'])) === 'sales';
+                })
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            $receiptVouchers = collect($vouchers)
+                ->filter(function ($item) {
+                    return strtolower(trim($item['mapped_type'])) === 'receipt';
+                })
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            $journalVouchers = collect($vouchers)
+                ->filter(function ($item) {
+
+                    return !in_array(
+                        strtolower(trim($item['mapped_type'])),
+                        [
+                            'sales',
+                            'receipt',
+                            'purchase',
+                            'payment'
+                        ]
+                    );
+
+                })
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+             $summary = [
                 'sale'     => collect($vouchers)->sum('debit'),
                 'receipts' => collect($vouchers)->sum('credit'),
             ];
 
-            // Sales = Debit Only
-            $salesVouchers = collect($vouchers)
-                ->filter(function ($item) {
+            if ($under === "Sundry Debtors") {
 
-                    return ($item['debit'] ?? 0) > 0
-                        && !str_contains(
-                            strtolower(trim($item['voucher_type'] ?? '')),
-                            'journal'
-                        );
-                })
-                ->sortByDesc('date')
-                ->values()
-                ->toArray();
+                $primaryVouchers = collect($vouchers)
+                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'sales')
+                    ->values()
+                    ->toArray();
 
-            // Receipt = Credit Only
-            $receiptVouchers = collect($vouchers)
-                ->filter(function ($item) {
+                $secondaryVouchers = collect($vouchers)
+                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'receipt')
+                    ->values()
+                    ->toArray();
 
-                    return ($item['credit'] ?? 0) > 0
-                        && ($item['debit'] ?? 0) == 0;
+                $primaryLabel   = 'Sales';
+                $secondaryLabel = 'Receipt';
 
-                })
-                ->sortByDesc('date')
-                ->values()
-                ->toArray();
+            } elseif ($under === "Sundry Creditors") {
 
-            // Journal
-            $journalVouchers = collect($vouchers)
-                ->filter(function ($item) {
-                    return strtolower($item['voucher_type']) == 'journal';
-                })
-                ->sortByDesc('date')
-                ->values()
-                ->toArray();
+                $primaryVouchers = collect($vouchers)
+                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'purchase')
+                    ->values()
+                    ->toArray();
+
+                $secondaryVouchers = collect($vouchers)
+                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'payment')
+                    ->values()
+                    ->toArray();
+
+                $primaryLabel   = 'Purchase';
+                $secondaryLabel = 'Payment';
+
+            } else {
+
+                $primaryVouchers = [];
+                $secondaryVouchers = [];
+
+                $primaryLabel   = 'Primary';
+                $secondaryLabel = 'Secondary';
+            }
+ 
 
             return view(
                 'owner.tally.ledger-vouchers',
@@ -711,7 +753,12 @@ class OwnerController extends Controller
                     'closingBalance',
                     'salesVouchers',
                     'receiptVouchers',
-                    'journalVouchers'
+                    'journalVouchers',
+                    'under',
+                    'primaryVouchers',
+                    'secondaryVouchers',
+                    'primaryLabel',
+                    'secondaryLabel'
                 )
             );
 
@@ -736,6 +783,7 @@ class OwnerController extends Controller
 
 
 
+
     public function voucherMappings($company)
     {
         $xml = $this->tally->getVoucherTypes($company);
@@ -754,12 +802,10 @@ class OwnerController extends Controller
 
                     $name = '';
 
-                    // NAME tag
                     if (isset($node->NAME)) {
                         $name = (string) $node->NAME;
                     }
 
-                    // NAME attribute
                     if (empty($name) && isset($node['NAME'])) {
                         $name = (string) $node['NAME'];
                     }
@@ -775,7 +821,10 @@ class OwnerController extends Controller
 
         $savedMappings = VoucherMapping::pluck('mapped_to', 'voucher_type')->toArray();
 
-        return view('owner.tally.voucher-mappings', compact('voucherTypes', 'savedMappings'));
+        return view(
+            'owner.tally.voucher-mappings',
+            compact('voucherTypes', 'savedMappings', 'company')
+        );
     }
 
 
@@ -783,12 +832,15 @@ class OwnerController extends Controller
     {
         $voucherTypes = array_keys($request->mapping);
 
-        VoucherMapping::whereNotIn('voucher_type', $voucherTypes)->delete();
+        VoucherMapping::where('company', $request->company)
+            ->whereNotIn('voucher_type', $voucherTypes)
+            ->delete();
 
         foreach ($request->mapping as $voucherType => $mappedTo) {
 
             VoucherMapping::updateOrCreate(
                 [
+                    'company'      => $request->company,
                     'voucher_type' => $voucherType
                 ],
                 [

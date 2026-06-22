@@ -57,13 +57,8 @@
                                     {{ count($ledgers) }}
                                 </span>
                             </div>
-                            
-                            
-
                            <div class="card-body">
-
                             <ul class="nav nav-pills mb-4" id="ledgerTabs" role="tablist">
-
                                 <li class="nav-item me-2">
                                     <button class="nav-link active"
                                         data-bs-toggle="pill"
@@ -117,7 +112,8 @@
                                                                     'owner.tally.ledger.vouchers',
                                                                     [
                                                                         'company' => urlencode($company),
-                                                                        'ledger'  => urlencode($ledger['name'])
+                                                                        'ledger'  => urlencode($ledger['name']),
+                                                                        'under'   => urlencode($ledger['under'] ?? '')
                                                                     ]
                                                                 ) }}"
                                                                 class="btn btn-primary btn-sm">
@@ -175,7 +171,8 @@
                                                                     'owner.tally.ledger.vouchers',
                                                                     [
                                                                         'company' => urlencode($company),
-                                                                        'ledger'  => urlencode($ledger['name'])
+                                                                        'ledger'  => urlencode($ledger['name']),
+                                                                        'under'   => urlencode($ledger['under'] ?? '')
                                                                     ]
                                                                 ) }}"
                                                                 class="btn btn-primary btn-sm">

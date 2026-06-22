@@ -57,22 +57,33 @@
                                             }
                                         }, 3000); // 3 seconds
                                     </script>
-                                    <div class="card-header">
-                                        <h4>
-                                            Voucher Mapping
-                                        </h4>
+                                   <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h4>Voucher Mapping</h4>
+
+                                        <span class="badge bg-primary fs-6">
+                                            Company : {{ $company }}
+                                        </span>
+                                        <input type="text" name="company" value="{{ $company }}" hidden>
                                     </div>
 
                                     <div class="card-body">
 
-                                     @php
-                                        $mappingOptions = [
-                                            'Sales',
-                                            'Purchase',
-                                            'Others'
-                                        ];
-                                        @endphp
+                                        @php
+                                            $mappingOptions = [
+                                                'Sales',
+                                                'Receipt',
+                                                'Purchase',
+                                                'Payment',
+                                                'Others'
+                                            ];
 
+                                            $fixedMappings = [
+                                                'Sales',
+                                                'Receipt',
+                                                'Purchase',
+                                                'Payment'
+                                            ];
+                                        @endphp
                                         <div class="table-responsive">
                                             <table id="example111" class="table table-bordered table-striped">
                                                 <thead>

@@ -106,11 +106,9 @@ Route::prefix('owner')->middleware(['auth:owner', 'owner.subscription'])->group(
 
 
         Route::get(
-            '/tally/company/{company}/ledger/{ledger}/vouchers',
+            '/tally/company/{company}/ledger/{ledger}/vouchers/{under?}',
             [OwnerController::class, 'ledgerVouchers']
         )->name('owner.tally.ledger.vouchers');
-
-
 
         Route::get(
             '/tally/voucher-mappings/{company}',

@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('voucher_type');
             $table->string('mapped_to');
+            $table->string('company');
             $table->timestamps();
         });
     }

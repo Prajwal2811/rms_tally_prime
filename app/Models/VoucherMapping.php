@@ -11,6 +11,7 @@ class VoucherMapping extends Model
     
     protected $fillable = [
         'voucher_type',
-        'mapped_to'
+        'mapped_to',
+        'company'
     ];
 }

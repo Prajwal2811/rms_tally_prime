@@ -32,42 +32,45 @@
                 <div class="col-12">
 
                     <div class="card">
-
-                        <div class="card-header">
-                            <div>
-                                <h4 class="card-title">
-                                    Ledger Vouchers
-                                </h4>
-                            </div>
+                        <div class="card-header d-flex justify-content-between">
+                            <h4 class="card-title">Ledger Vouchers</h4>
+                            <span class="badge bg-primary">
+                              {{  $under }}
+                            </span>
                         </div>
 
                         <div class="card-body">
                             <div class="row g-3 mb-4">
 
                                    @php
-                                        $cards = [
-                                            [
-                                                'title' => 'Sale',
-                                                'value' => $summary['sale'] ?? 0,
-                                                'bg'    => 'warning'
-                                            ],
-                                            [
-                                                'title' => 'Receipts',
-                                                'value' => $summary['receipts'] ?? 0,
-                                                'bg'    => 'info'
-                                            ],
-                                            [
-                                                'title' => 'Opening Balance',
-                                                'value' => abs($openingBalance ?? 0),
-                                                'bg'    => 'primary'
-                                            ],
-                                            [
-                                                'title' => 'Closing Balance',
-                                                'value' => abs($closingBalance ?? 0),
-                                                'bg'    => 'success'
-                                            ],
-                                        ];
-                                    @endphp
+
+$firstCardTitle = $primaryLabel;
+$secondCardTitle = $secondaryLabel;
+
+$cards = [
+    [
+        'title' => $firstCardTitle,
+        'value' => $summary['sale'] ?? 0,
+        'bg'    => 'warning'
+    ],
+    [
+        'title' => $secondCardTitle,
+        'value' => $summary['receipts'] ?? 0,
+        'bg'    => 'info'
+    ],
+    [
+        'title' => 'Opening Balance',
+        'value' => abs($openingBalance ?? 0),
+        'bg'    => 'primary'
+    ],
+    [
+        'title' => 'Closing Balance',
+        'value' => abs($closingBalance ?? 0),
+        'bg'    => 'success'
+    ],
+];
+
+@endphp
                                     @foreach($cards as $card)
                                         <div class="col-xl-3 col-lg-4 col-md-6">
                                             <div class="card border-0 shadow-sm h-100">
@@ -99,29 +102,44 @@
                                             </div>
                                         </div>
                                     @endforeach
-                                    <ul class="nav nav-pills mb-4" id="voucherTabs" role="tablist">
-                                        <li class="nav-item me-2">
-                                            <button class="nav-link active"
-                                                data-bs-toggle="pill"
-                                                data-bs-target="#sales-tab">
-                                                Sales ({{ count($salesVouchers) }})
-                                            </button>
-                                        </li>
-                                        <li class="nav-item me-2">
-                                            <button class="nav-link"
-                                                data-bs-toggle="pill"
-                                                data-bs-target="#receipt-tab">
-                                                Receipt ({{ count($receiptVouchers) }})
-                                            </button>
-                                        </li>
-                                        <li class="nav-item me-2">
-                                            <button class="nav-link"
-                                                data-bs-toggle="pill"
-                                                data-bs-target="#journal-tab">
-                                                Others ({{ count($journalVouchers) }})
-                                            </button>
-                                        </li>
-                                    </ul>
+
+                                    
+                                    <ul class="nav nav-pills mb-4" id="voucherTabs">
+
+    <li class="nav-item me-2">
+        <button class="nav-link active"
+            data-bs-toggle="pill"
+            data-bs-target="#sales-tab">
+
+            {{ $primaryLabel }}
+            ({{ count($primaryVouchers) }})
+
+        </button>
+    </li>
+
+    <li class="nav-item me-2">
+        <button class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#receipt-tab">
+
+            {{ $secondaryLabel }}
+            ({{ count($secondaryVouchers) }})
+
+        </button>
+    </li>
+
+    {{-- Others Tab --}}
+    <li class="nav-item me-2">
+        <button class="nav-link"
+            data-bs-toggle="pill"
+            data-bs-target="#others-tab">
+
+            Others ({{ count($journalVouchers) }})
+
+        </button>
+    </li>
+
+</ul>
                                 </div>
                                 <style>
                                     .card {
@@ -140,127 +158,165 @@
                                         text-transform: uppercase;
                                     }
                                 </style>
-                                <div class="tab-content">
-                                    <div class="tab-pane fade show active" id="sales-tab">
-                                        <div class="table-responsive">
-                                            <table id="example11" class="display">
-                                                <thead>
+                               <div class="tab-content">
+
+                                {{-- Sales Tab --}}
+                                <div class="tab-pane fade show active" id="sales-tab">
+
+                                    @php $voucherList = $primaryVouchers; @endphp
+
+                                    <div class="table-responsive">
+                                        <table id="example11" class="display">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr.No</th>
+                                                    <th>Date</th>
+                                                    <th>Particulars</th>
+                                                    <th>Vch No</th>
+                                                    <th class="text-end">Debit</th>
+                                                 
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($voucherList as $index => $voucher)
                                                     <tr>
-                                                        <th>Sr.No</th>
-                                                        <th>Date</th>
-                                                        <th>Particulars</th>
-                                                        <th>Vch No</th>
-                                                        <th class="text-end">Debit</th>
+                                                        <td>{{ $index + 1 }}</td>
+
+                                                        <td>
+                                                            {{ !empty($voucher['date'])
+                                                                ? \Carbon\Carbon::parse($voucher['date'])->format('d M Y')
+                                                                : '-' }}
+                                                        </td>
+
+                                                        <td>{{ $voucher['particulars'] ?? '-' }}</td>
+
+                                                        <td>{{ $voucher['voucher_number'] ?? '-' }}</td>
+
+                                                        <td class="text-end">
+                                                            ₹ {{ number_format($voucher['debit'] ?? 0, 2) }}
+                                                        </td>
+
+                                                         
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse($salesVouchers as $index => $voucher)
-                                                        <tr>
-                                                            <td>{{ $index + 1 }}</td>
-                                                            <td>
-                                                                {{ !empty($voucher['date'])
-                                                                    ? \Carbon\Carbon::parse($voucher['date'])->format('d M Y')
-                                                                    : '-' }}
-                                                            </td>
-                                                            <td>{{ $voucher['particulars'] ?? '-' }}</td>
-                                                            <td>{{ $voucher['voucher_number'] ?? '-' }}</td>
-                                                            <td class="text-end">
-                                                                ₹ {{ number_format($voucher['debit'] ?? 0, 2) }}
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">
-                                                                No Sales Vouchers Found
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                    <!-- RECEIPT -->
-                                    <div class="tab-pane fade" id="receipt-tab">
-                                        <div class="table-responsive">
-                                            <table id="example12" class="display">
-                                                <thead>
+                                                @empty
                                                     <tr>
-                                                        <th>Sr.No</th>
-                                                        <th>Date</th>
-                                                        <th>Particulars</th>
-                                                        <th class="text-end">Credit</th>
+                                                        <td colspan="7" class="text-center">
+                                                            No Sales Vouchers Found
+                                                        </td>
                                                     </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse($receiptVouchers as $index => $voucher)
-                                                        <tr>
-                                                            <td>{{ $index + 1 }}</td>
-                                                            <td>
-                                                                {{ !empty($voucher['date'])
-                                                                    ? \Carbon\Carbon::parse($voucher['date'])->format('d M Y')
-                                                                    : '-' }}
-                                                            </td>
-                                                            <td>{{ $voucher['particulars'] ?? '-' }}</td>
-                                                            <td class="text-end">
-                                                                ₹ {{ number_format($voucher['credit'] ?? 0, 2) }}
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">
-                                                                No Receipt Vouchers Found
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
                                     </div>
-                                    <!-- JOURNAL -->
-                                    <div class="tab-pane fade" id="journal-tab">
-                                        <div class="table-responsive">
-                                                 <table id="example13" class="display">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Sr.No</th>
-                                                        <th>Date</th>
-                                                        <th>Particulars</th>
-                                                        <th class="text-end">Debit</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    @forelse($journalVouchers as $index => $voucher)
-                                                        <tr>
-                                                            <td>{{ $index + 1 }}</td>
-                                                            <td>
-                                                                {{ !empty($voucher['date'])
-                                                                    ? \Carbon\Carbon::parse($voucher['date'])->format('d M Y')
-                                                                    : '-' }}
-                                                            </td>
-                                                            <td>{{ $voucher['particulars'] ?? '-' }}</td>
-                                                           
-                                                            <td class="text-end">
-                                                                ₹ {{ number_format($voucher['debit'] ?? 0, 2) }}
-                                                            </td>
-                                                        </tr>
-                                                    @empty
-                                                        <tr>
-                                                            <td colspan="5" class="text-center">
-                                                                No Journal Vouchers Found
-                                                            </td>
-                                                        </tr>
-                                                    @endforelse
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                   
+
                                 </div>
+
+                                {{-- Receipt Tab --}}
+                                <div class="tab-pane fade" id="receipt-tab">
+
+                                    @php $voucherList = $secondaryVouchers; @endphp
+
+                                    <div class="table-responsive">
+                                        <table id="example12" class="display">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr.No</th>
+                                                    <th>Date</th>
+                                                    <th>Particulars</th>
+                                                    <th class="text-end">Credit</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($voucherList as $index => $voucher)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+
+                                                        <td>
+                                                            {{ !empty($voucher['date'])
+                                                                ? \Carbon\Carbon::parse($voucher['date'])->format('d M Y')
+                                                                : '-' }}
+                                                        </td>
+
+                                                        <td>{{ $voucher['particulars'] ?? '-' }}</td>
+
+
+                                                        <td class="text-end">
+                                                            ₹ {{ number_format($voucher['credit'] ?? 0, 2) }}
+                                                        </td>
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="7" class="text-center">
+                                                            No Receipt Vouchers Found
+                                                        </td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+
+                                {{-- Others Tab --}}
+                                <div class="tab-pane fade" id="others-tab">
+
+                                    @php $voucherList = $journalVouchers; @endphp
+
+                                    <div class="table-responsive">
+                                        <table id="example13" class="display">
+                                            <thead>
+                                                <tr>
+                                                    <th>Sr.No</th>
+                                                    <th>Date</th>
+                                                    <th>Particulars</th>
+                                                    <th>Voucher Type</th>
+                                                    <th>Vch No</th>
+                                                    <th class="text-end">Debit</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @forelse($voucherList as $index => $voucher)
+                                                    <tr>
+                                                        <td>{{ $index + 1 }}</td>
+
+                                                        <td>
+                                                            {{ !empty($voucher['date'])
+                                                                ? \Carbon\Carbon::parse($voucher['date'])->format('d M Y')
+                                                                : '-' }}
+                                                        </td>
+
+                                                        <td>{{ $voucher['particulars'] ?? '-' }}</td>
+
+                                                        <td>{{ $voucher['voucher_type'] ?? '-' }}</td>
+
+                                                        <td>{{ $voucher['voucher_number'] ?? '-' }}</td>
+
+                                                        <td class="text-end">
+                                                            ₹ {{ number_format($voucher['debit'] ?? 0, 2) }}
+                                                        </td>
+
+                                                    </tr>
+                                                @empty
+                                                    <tr>
+                                                        <td colspan="7" class="text-center">
+                                                            No Other Vouchers Found
+                                                        </td>
+                                                    </tr>
+                                                @endforelse
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                </div>
+
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    
 </div>
 @include('owner.components.footer')
