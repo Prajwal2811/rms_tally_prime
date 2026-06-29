@@ -71,18 +71,10 @@
                                         @php
                                             $mappingOptions = [
                                                 'Sales',
-                                                'Receipt',
                                                 'Purchase',
-                                                'Payment',
-                                                'Others'
+                                                'Other than Sales/Purchase'
                                             ];
-
-                                            $fixedMappings = [
-                                                'Sales',
-                                                'Receipt',
-                                                'Purchase',
-                                                'Payment'
-                                            ];
+ 
                                         @endphp
                                         <div class="table-responsive">
                                             <table id="example111" class="table table-bordered table-striped">
@@ -104,7 +96,7 @@
 
                                                             <td>
                                                                 @php
-                                                                    $selectedValue = $savedMappings[$voucher['name']] ?? 'Others';
+                                                                    $selectedValue = $savedMappings[$voucher['name']] ?? 'Other than Sales/Purchase';
                                                                 @endphp
 
                                                                 <div class="d-flex flex-wrap gap-3">
@@ -143,7 +135,6 @@
                                                 </tbody>
                                             </table>
                                         </div>
-
                                     </div>
 
                                     <div class="card-footer text-end">

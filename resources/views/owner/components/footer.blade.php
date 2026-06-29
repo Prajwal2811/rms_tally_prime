@@ -20,13 +20,7 @@
     });
 </script>
 
-    <!--**********************************
-        Main wrapper end
-    ***********************************-->
-
-    <!--**********************************
-        Scripts
-    ***********************************-->
+    
     <!-- Required vendors -->
     <script src="{{ asset('asset/vendor/global/global.min.js') }}"></script>
 
@@ -94,7 +88,7 @@
 	</script>
 
 
-<script src="{{ asset('asset/vendor/bootstrap-select/js/bootstrap-select.min.js') }}"></script>
+	<script src="{{ asset('asset/vendor/bootstrap-select/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ asset('asset/js/custom.min.js') }}"></script>
     <script src="{{ asset('asset/js/dlabnav-init.js') }}"></script>
     <script src="{{ asset('asset/js/demo.js') }}"></script>

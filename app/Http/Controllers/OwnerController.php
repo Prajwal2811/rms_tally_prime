@@ -697,49 +697,115 @@ class OwnerController extends Controller
                 ->values()
                 ->toArray();
 
-             $summary = [
+            $summary = [
                 'sale'     => collect($vouchers)->sum('debit'),
                 'receipts' => collect($vouchers)->sum('credit'),
             ];
 
-            if ($under === "Sundry Debtors") {
+          if ($under === "Sundry Debtors") {
 
-                $primaryVouchers = collect($vouchers)
-                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'sales')
-                    ->values()
-                    ->toArray();
+            // Sales Tab - sirf Sales vouchers, debit side
+            $primaryVouchers = collect($vouchers)
+                ->filter(fn($item) =>
+                    strtolower(trim($item['mapped_type'])) === 'sales'
+                    && ($item['debit'] ?? 0) > 0
+                )
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
 
-                $secondaryVouchers = collect($vouchers)
-                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'receipt')
-                    ->values()
-                    ->toArray();
+            // Receipts Tab - saare Credit entries (koi bhi voucher type)
+            $secondaryVouchers = collect($vouchers)
+                ->filter(fn($item) => ($item['credit'] ?? 0) > 0)
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
 
-                $primaryLabel   = 'Sales';
-                $secondaryLabel = 'Receipt';
+            // Others Tab - saare Debit entries jo Sales nahi hain
+            $journalVouchers = collect($vouchers)
+                ->filter(fn($item) =>
+                    strtolower(trim($item['mapped_type'])) !== 'sales'
+                    && ($item['debit'] ?? 0) > 0
+                )
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
 
-            } elseif ($under === "Sundry Creditors") {
+            // Totals
+            $totalSales    = collect($primaryVouchers)->sum('debit');
+            $totalOthers   = collect($journalVouchers)->sum('debit');
+            $totalDebit    = $totalSales + $totalOthers;
+            $totalCredit   = collect($secondaryVouchers)->sum('credit');
+            $pendingAmount = max(0, $totalDebit - $totalCredit);
 
-                $primaryVouchers = collect($vouchers)
-                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'purchase')
-                    ->values()
-                    ->toArray();
+            $summary = [
+                'sale'     => $totalDebit,
+                'receipts' => $totalCredit,
+                'pending'  => $pendingAmount,
+            ];
 
-                $secondaryVouchers = collect($vouchers)
-                    ->filter(fn($item) => strtolower(trim($item['mapped_type'])) === 'payment')
-                    ->values()
-                    ->toArray();
+            $primaryLabel   = 'Total Debit';
+            $secondaryLabel = 'Total Credit';
 
-                $primaryLabel   = 'Purchase';
-                $secondaryLabel = 'Payment';
+        } elseif ($under === "Sundry Creditors") {
 
-            } else {
+            // Purchase Tab - sirf Purchase vouchers, credit side
+            $primaryVouchers = collect($vouchers)
+                ->filter(fn($item) =>
+                    strtolower(trim($item['mapped_type'])) === 'purchase'
+                    && ($item['credit'] ?? 0) > 0
+                )
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
 
-                $primaryVouchers = [];
-                $secondaryVouchers = [];
+            // Payments Tab - saare Debit entries (koi bhi voucher type)
+            $secondaryVouchers = collect($vouchers)
+                ->filter(fn($item) => ($item['debit'] ?? 0) > 0)
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
 
-                $primaryLabel   = 'Primary';
-                $secondaryLabel = 'Secondary';
-            }
+            // Others Tab - saare Credit entries jo Purchase nahi hain
+            $journalVouchers = collect($vouchers)
+                ->filter(fn($item) =>
+                    strtolower(trim($item['mapped_type'])) !== 'purchase'
+                    && ($item['credit'] ?? 0) > 0
+                )
+                ->sortByDesc('date')
+                ->values()
+                ->toArray();
+
+            // Totals
+            $totalPurchase = collect($primaryVouchers)->sum('credit');
+            $totalOthers   = collect($journalVouchers)->sum('credit');
+            $totalCredit   = $totalPurchase + $totalOthers;
+            $totalDebit    = collect($secondaryVouchers)->sum('debit');
+            $pendingAmount = max(0, $totalCredit - $totalDebit);
+
+            $summary = [
+                'sale'     => $totalCredit,
+                'receipts' => $totalDebit,
+                'pending'  => $pendingAmount,
+            ];
+
+            $primaryLabel   = 'Total Credit';
+            $secondaryLabel = 'Total Debit';
+
+        } else {
+
+            $primaryVouchers   = [];
+            $secondaryVouchers = [];
+            $journalVouchers   = [];
+            $primaryLabel      = 'Primary';
+            $secondaryLabel    = 'Secondary';
+
+            $summary = [
+                'sale'     => 0,
+                'receipts' => 0,
+                'pending'  => 0,
+            ];
+        }
  
 
             return view(
